@@ -212,6 +212,16 @@ select {
 .film-head { display: flex; gap: 14px; align-items: flex-end; }
 .poster-sm { width: 60px; flex: none; margin: 0; border-radius: var(--r-sm); }
 .film-head-text { min-width: 0; }
+/* Poster in column 1; title, details and filters in column 2 (filters span both on phones). */
+.film-top {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 14px;
+  grid-template-areas: "poster title" "poster meta" "controls controls";
+  grid-template-rows: auto 1fr auto; align-items: start;
+}
+.film-top-poster { grid-area: poster; }
+.film-top .film-title { grid-area: title; }
+.film-top .film-meta { grid-area: meta; }
+.film-top .controls { grid-area: controls; }
 .film-title { font: 800 clamp(28px, 7vw, 44px)/0.95 var(--display); margin: 0 0 4px; text-wrap: balance; }
 .film-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; color: var(--ink-2); font-size: 14px; }
 
@@ -394,6 +404,9 @@ select {
 @media (min-width: 720px) {
   .page { padding-top: 24px; }
   .poster-sm { width: 84px; }
+  .film-top { column-gap: 20px; grid-template-areas: "poster title" "poster meta" "poster controls"; grid-template-rows: auto auto 1fr; }
+  .film-top-poster { width: 132px; }
+  .film-top .controls { margin-bottom: 0; }
   .controls { gap: 16px 28px; }
 }
 
@@ -404,7 +417,10 @@ select {
     display: grid; grid-template-columns: fit-content(min(62%, 980px)) minmax(360px, 1fr);
     gap: 32px; align-items: start;
   }
-  .movie-main { min-width: 0; }
+  /* The heat grid sets the column width; the filter box wraps to match it. */
+  .movie-main { min-width: 560px; }
+  .movie-main .controls { contain: inline-size; }
+  body:has(.page-movie) .footer { max-width: 1920px; padding-inline: 32px; }
   .movie-main .heat-scroll { margin-inline: 0; padding-inline: 4px; }
   .movie-side {
     position: sticky; top: calc(var(--topbar) + 16px);

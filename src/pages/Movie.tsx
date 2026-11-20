@@ -10,7 +10,7 @@ import { MAX_MALLS, loadMalls, saveMalls } from "../lib/prefs";
 import { analyzeCached, zoneFromParams, zoneToParams, type Zone } from "../lib/seats";
 import { ensureSeats, pace, filmDetails, loadDay, loadFilm, seats, showtimes, stKey, useStore } from "../lib/store";
 import type { Showtime, Site } from "../lib/types";
-import { FilmHeader } from "./parts";
+import { Poster } from "./parts";
 
 const ROW_LETTERS = "ABCDEFGHIJKLMNOPQRS".split("");
 const MAX_SIZE = 10;
@@ -105,7 +105,15 @@ export function MoviePage({ filmId }: { filmId: string }) {
     <main className="page page-movie">
       <div className="movie-layout">
       <div className="movie-main">
-      <FilmHeader film={film} meta={meta} />
+      <Link className="back" href="/">All movies</Link>
+      <div className="film-top">
+      <Poster film={film} className="poster-sm film-top-poster" />
+      <h1 className="film-title">{film.title}</h1>
+      <p className="film-meta">
+        {meta.map((m) => (
+          <span key={m}>{m}</span>
+        ))}
+      </p>
 
       <section className="controls" aria-label="Filters">
         <div className="control">
@@ -158,6 +166,7 @@ export function MoviePage({ filmId }: { filmId: string }) {
           </p>
         )}
       </section>
+      </div>
 
       {!malls.length ? (
         <div className="empty">

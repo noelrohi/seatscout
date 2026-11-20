@@ -113,6 +113,7 @@ export async function withMeta(
     })
     .transform(shell);
   const headers = new Headers(res.headers);
-  headers.set("cache-control", "public, max-age=300");
+  // Always revalidate: the shell points at hashed assets that change on every deploy.
+  headers.set("cache-control", "no-cache");
   return new Response(res.body, { status: 200, headers });
 }

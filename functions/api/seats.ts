@@ -21,18 +21,22 @@ export const onRequestGet: PagesFunction = async (ctx) => {
     const seats: Seats[] = [];
     const pending: string[] = [];
     const errors: string[] = [];
+    const reasons: string[] = [];
     // One at a time: the upstream budget is small, and a 429 should stop the batch early.
     for (const [id, l] of items) {
       try {
         seats.push(await getSeats(id, l, fresh, c));
       } catch (e) {
         if (e instanceof RateLimited) pending.push(id);
-        else errors.push(id);
+        else {
+          errors.push(id);
+          reasons.push(e instanceof Error ? e.message : String(e));
+        }
       }
     }
     const retryAfter = pending.length ? retryAfterSeconds() : 0;
     const allFresh = !pending.length && !errors.length && seats.every((s) => !s.stale);
-    return json({ seats, pending, errors, retryAfter }, allFresh && !fresh ? 60 : 0);
+    return json({ seats, pending, errors, reasons, retryAfter }, allFresh && !fresh ? 60 : 0);
   } catch (e) {
     return errorResponse(e);
   }

@@ -146,33 +146,38 @@ const MAX_ATTEMPTS = 8;
 async function fetchSeats(batch: Array<{ id: string; layoutId: string; pri?: number }>, fresh: boolean): Promise<number> {
   let retryAfter = 0;
   let retry: typeof batch = [];
+  let failed: typeof batch = [];
   try {
     const res = await api.seats(batch, fresh);
     for (const s of res.seats) {
       seats.set(s.id, { state: "ready", data: s });
       attempts.delete(s.id);
     }
-    for (const id of res.errors) if (seats.get(id)?.state !== "ready") seats.set(id, { state: "error", error: "Unable to load seats" });
     retry = batch.filter((b) => res.pending.includes(b.id));
+    failed = batch.filter((b) => res.errors.includes(b.id));
     retryAfter = res.retryAfter;
   } catch (e) {
     if (e instanceof ApiError && e.status === 429) {
       retry = batch;
       retryAfter = e.retryAfter ?? 5;
-    } else for (const b of batch) if (seats.get(b.id)?.state !== "ready") seats.set(b.id, { state: "error", error: msg(e) });
+    } else failed = batch;
   }
-  if (retry.length && retryAfter) {
-    pace.pausedUntil = Math.max(pace.pausedUntil, Date.now() + retryAfter * 1000);
-    if (!fresh) {
-      const again = retry.filter((b) => {
-        const n = (attempts.get(b.id) ?? 0) + 1;
-        attempts.set(b.id, n);
-        if (n < MAX_ATTEMPTS) return true;
-        if (seats.get(b.id)?.state !== "ready") seats.set(b.id, { state: "error", error: "Seat data is busy" });
-        return false;
-      });
-      if (again.length) enqueue((again[0].pri ?? 0) + 0.5, () => fetchSeats(again, false).then(() => {}));
+  if (retryAfter) pace.pausedUntil = Math.max(pace.pausedUntil, Date.now() + retryAfter * 1000);
+  if (!fresh) {
+    // Rate-limited items wait for the pause; failures back off and try a few more times.
+    const again = [...retry, ...failed].filter((b) => {
+      const n = (attempts.get(b.id) ?? 0) + 1;
+      attempts.set(b.id, n);
+      if (n < MAX_ATTEMPTS) return true;
+      if (seats.get(b.id)?.state !== "ready") seats.set(b.id, { state: "error", error: "Unable to load seats" });
+      return false;
+    });
+    if (again.length) {
+      const delay = failed.length && !retry.length ? Math.min(30, 2 ** (attempts.get(again[0].id) ?? 1)) * 1000 : 0;
+      setTimeout(() => enqueue((again[0].pri ?? 0) + 0.5, () => fetchSeats(again, false).then(() => {})), delay);
     }
+  } else {
+    for (const b of failed) if (seats.get(b.id)?.state !== "ready") seats.set(b.id, { state: "error", error: "Unable to load seats" });
   }
   emit();
   return retryAfter;

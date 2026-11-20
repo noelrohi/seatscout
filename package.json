@@ -8,7 +8,7 @@
     "build": "tsc -p tsconfig.json && vite build",
     "typecheck": "tsc -p tsconfig.json && tsc -p functions",
     "preview": "bun run build && wrangler pages dev",
-    "deploy": "bun run build && wrangler pages deploy --project-name seatscout"
+    "deploy": "bun run build && CLOUDFLARE_ACCOUNT_ID=9d36ab66c67917954b8c1403beb0b2e9 wrangler pages deploy --project-name seatscout --branch main"
   },
   "dependencies": {
     "@tanstack/react-router": "^1.170.46",

@@ -48,4 +48,4 @@ bunx wrangler pages dev --port 8788   # serves dist/ and functions/
 bun run dev                            # Vite on :5173, proxies /api to :8788
 ```
 
-Deploy: `bun run deploy` (Cloudflare Pages project `seatscout`).
+Deploy: `bun run deploy` (Cloudflare Pages project `seatscout` in account `9d36ab66c67917954b8c1403beb0b2e9`).

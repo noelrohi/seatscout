@@ -103,6 +103,8 @@ export function MoviePage({ filmId }: { filmId: string }) {
 
   return (
     <main className="page page-movie">
+      <div className="movie-layout">
+      <div className="movie-main">
       <FilmHeader film={film} meta={meta} />
 
       <section className="controls" aria-label="Filters">
@@ -180,7 +182,6 @@ export function MoviePage({ filmId }: { filmId: string }) {
           {datesBySite.size > 0 && <button type="button" className="btn btn-primary" onClick={() => setPicker(true)}>Choose malls</button>}
         </div>
       ) : (
-        <>
           <section className="grid-section" aria-label="Seats by mall and date">
             <Progress film={filmId} dates={columns} malls={malls} plays={plays} />
             <HeatGrid
@@ -201,8 +202,11 @@ export function MoviePage({ filmId }: { filmId: string }) {
               <span className="muted">Number: most seats together</span>
             </div>
           </section>
+      )}
+      </div>
 
-          {selDate && (
+      {malls.length > 0 && columns.length > 0 && selDate && (
+        <aside className="movie-side">
             <DayPanel
               film={filmId}
               date={selDate}
@@ -213,9 +217,9 @@ export function MoviePage({ filmId }: { filmId: string }) {
               onWiden={() => setZone({ kind: "anywhere" })}
               onShowAll={selMall ? () => setParams({ mall: null }) : undefined}
             />
-          )}
-        </>
+        </aside>
       )}
+      </div>
 
       <Sheet open={picker} onClose={() => setPicker(false)} title="Choose malls">
         {data && <MallPicker sites={data.sites} datesBySite={datesBySite} selected={malls} onDone={chooseMalls} />}

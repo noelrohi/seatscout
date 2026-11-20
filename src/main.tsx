@@ -47,7 +47,6 @@ function App() {
       </div>
       <footer className="footer">
         <p>Unofficial. Not affiliated with Ayala Malls Cinemas.</p>
-        <p>Seat counts come from the public booking site and can change at any moment. Always confirm on the seat page before you pay.</p>
       </footer>
     </>
   );

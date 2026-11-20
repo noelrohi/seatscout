@@ -28,12 +28,7 @@ export function MoviesPage() {
 
   return (
     <main className="page">
-      <section className="intro">
-        <h1 className="intro-title">Find seats together, before you open a single seat map.</h1>
-        <p className="intro-sub">
-          Pick a movie to see which Ayala Malls Cinemas showtimes still have room for your group in a good spot.
-        </p>
-      </section>
+      <h1 className="intro-title">Find seats together at Ayala Malls Cinemas</h1>
 
       <div className="movies-bar">
         <Segmented
@@ -110,13 +105,13 @@ function MovieCard({ film }: { film: Film }) {
       <span className="movie-meta">
         {film.rating && <span className="tag">{film.rating}</span>}
         {runtime && <span>{runtime}</span>}
-      </span>
-      <span className="movie-malls">
+        <span>
         {film.malls
           ? `${film.status === "soon" && film.releaseDate ? `Opens ${fmtDateShort(film.releaseDate)}, ` : ""}${plural(film.malls, "mall", "malls")}`
           : film.releaseDate
             ? `Opens ${fmtDateShort(film.releaseDate)}, no showtimes yet`
             : "No showtimes yet"}
+        </span>
       </span>
     </Link>
   );

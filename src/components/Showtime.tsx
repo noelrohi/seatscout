@@ -58,8 +58,8 @@ export function ShowtimeCard({
         {st.formats.map((f) => (
           <span key={f} className="tag">{f}</span>
         ))}
+        {s && <span className="st-free">{s.free} of {s.total} free</span>}
       </span>
-      <span className="st-free">{s ? `${s.free} of ${s.total} seats free` : " "}</span>
       {s && a ? <SeatMap seats={s} analysis={a} variant="mini" label={mapLabel(s, a, size)} /> : <Skeleton className="sk-map" />}
     </button>
   );

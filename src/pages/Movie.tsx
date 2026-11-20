@@ -110,6 +110,13 @@ export function MoviePage({ filmId }: { filmId: string }) {
           <span className="control-label" id="size-label">Seats together</span>
           <Stepper value={size} min={1} max={MAX_SIZE} label="Seats together" onChange={(n) => setParams({ size: n === 2 ? null : String(n) })} />
         </div>
+        <div className="control">
+          <span className="control-label">Malls</span>
+          <button type="button" className="btn btn-field" onClick={() => setPicker(true)}>
+            {malls.length ? plural(malls.length, "mall", "malls") : "Choose malls"}
+            <svg viewBox="0 0 16 16" aria-hidden className="chev"><path d="M4.5 6.5 8 10l3.5-3.5" /></svg>
+          </button>
+        </div>
         <div className="control control-zone">
           <span className="control-label">Seat zone</span>
           <Segmented
@@ -122,13 +129,6 @@ export function MoviePage({ filmId }: { filmId: string }) {
             ]}
             onChange={(k) => setZone(k === "custom" ? { kind: "custom", from: "D", to: "G", centerOnly: true } : { kind: k })}
           />
-        </div>
-        <div className="control">
-          <span className="control-label">Malls</span>
-          <button type="button" className="btn btn-field" onClick={() => setPicker(true)}>
-            {malls.length ? plural(malls.length, "mall", "malls") : "Choose malls"}
-            <svg viewBox="0 0 16 16" aria-hidden className="chev"><path d="M4.5 6.5 8 10l3.5-3.5" /></svg>
-          </button>
         </div>
         {zone.kind === "custom" && (
           <div className="control control-rows">
@@ -150,13 +150,11 @@ export function MoviePage({ filmId }: { filmId: string }) {
             </label>
           </div>
         )}
-        <p className="zone-hint muted">
-          {zone.kind === "middle"
-            ? "Middle means the center section, about a fifth to halfway back from the screen. Row letters vary by hall."
-            : zone.kind === "anywhere"
-              ? "Any seats in the hall, side sections included."
-              : "Row A is closest to the screen."}
-        </p>
+        {zone.kind !== "anywhere" && (
+          <p className="zone-hint muted">
+            {zone.kind === "middle" ? "Center section, 20–45% back from the screen." : "Row A is closest to the screen."}
+          </p>
+        )}
       </section>
 
       {!malls.length ? (
@@ -198,9 +196,9 @@ export function MoviePage({ filmId }: { filmId: string }) {
             />
             <div className="heat-legend">
               <span><i className="sw sw-heat" />Fits {size}</span>
-              <span><i className="sw sw-nofit" />Showing, no fit</span>
+              <span><i className="sw sw-nofit" />No fit</span>
               <span><i className="sw sw-none" />Not showing</span>
-              <span className="muted">Numbers are the most free seats together {zonePhrase(zone)}.</span>
+              <span className="muted">Number: most seats together</span>
             </div>
           </section>
 
@@ -263,7 +261,7 @@ function DayPanel({
       <header className="day-head">
         <div>
           <h2 id="day-title" className="day-title">{fmtDateLong(date)}</h2>
-          <p className="muted">{single ? groups[0]?.name : "All your malls"}</p>
+          {single && <p className="muted">{groups[0]?.name}</p>}
         </div>
         {onShowAll && (
           <button type="button" className="btn btn-quiet" onClick={onShowAll}>Show all malls</button>
@@ -337,7 +335,7 @@ function Progress({ film, dates, malls, plays }: { film: string; dates: string[]
     <div className="progress" role="status">
       <div className="progress-text">
         <span>{lists ? "Finding showtimes…" : `Checking seats: ${done} of ${plural(total, "showtime", "showtimes")}`}</span>
-        {paused && <span className="muted">The cinema site limits how fast seats can be checked, so this can take a minute.</span>}
+        {paused && <span className="muted">The cinema site limits seat checks. This can take a minute.</span>}
       </div>
       <div className="progress-bar" aria-hidden>
         <span style={{ width: `${total ? Math.round((done / total) * 100) : 4}%` }} />

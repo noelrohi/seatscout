@@ -225,6 +225,8 @@ export function MoviePage({ filmId }: { filmId: string }) {
               size={size}
               onWiden={() => setZone({ kind: "anywhere" })}
               onShowAll={selMall ? () => setParams({ mall: null }) : undefined}
+              fitOnly={params.get("fit") === "1"}
+              onFitOnly={(on) => setParams({ fit: on ? "1" : null })}
             />
         </aside>
       )}
@@ -248,6 +250,8 @@ function DayPanel({
   size,
   onWiden,
   onShowAll,
+  fitOnly,
+  onFitOnly,
 }: {
   film: string;
   date: string;
@@ -257,7 +261,17 @@ function DayPanel({
   size: number;
   onWiden: () => void;
   onShowAll?: () => void;
+  fitOnly: boolean;
+  onFitOnly: (on: boolean) => void;
 }) {
+  const fits = (st: Showtime) => {
+    const s = seats.get(st.id);
+    return s?.state === "ready" && (analyzeCached(s.data, zone, size).best?.len ?? 0) >= size;
+  };
+  const checking = (st: Showtime) => {
+    const s = seats.get(st.id)?.state;
+    return s !== "ready" && s !== "error";
+  };
   const groups = malls.map((m) => {
     const st = showtimes.get(stKey(film, date, m));
     const list = st?.state === "ready" ? sortByFit(st.data, zone, size) : null;
@@ -276,9 +290,15 @@ function DayPanel({
           <h2 id="day-title" className="day-title">{fmtDateLong(date)}</h2>
           {single && <p className="muted">{groups[0]?.name}</p>}
         </div>
-        {onShowAll && (
-          <button type="button" className="btn btn-quiet" onClick={onShowAll}>Show all malls</button>
-        )}
+        <div className="day-actions">
+          <label className="check">
+            <input type="checkbox" checked={fitOnly} onChange={(e) => onFitOnly(e.target.checked)} />
+            Only showtimes that fit {size}
+          </label>
+          {onShowAll && (
+            <button type="button" className="btn btn-quiet" onClick={onShowAll}>Show all malls</button>
+          )}
+        </div>
       </header>
 
       {settled && !anyFit && (
@@ -302,8 +322,13 @@ function DayPanel({
           ) : !g.list.length ? (
             <p className="muted">No showtimes at {g.name} on this date.</p>
           ) : (
-            <div className="cards">
-              {g.list.map((st) => (
+            <GroupCards
+              list={g.list}
+              shown={fitOnly ? g.list.filter(fits) : g.list}
+              pending={fitOnly ? g.list.filter(checking).length : 0}
+              emptyText={settled && !anyFit ? null : `None at ${g.name} fit ${size} together ${zonePhrase(zone)}.`}
+            >
+              {(shown) => shown.map((st) => (
                 <ShowtimeCard
                   key={st.id}
                   st={st}
@@ -316,11 +341,40 @@ function DayPanel({
                   }}
                 />
               ))}
-            </div>
+            </GroupCards>
           )}
         </div>
       ))}
     </section>
+  );
+}
+
+/** Cards for one mall; when filtering, says how many were hidden and keeps a placeholder while seats load. */
+function GroupCards({
+  list,
+  shown,
+  pending,
+  emptyText,
+  children,
+}: {
+  list: Showtime[];
+  shown: Showtime[];
+  pending: number;
+  emptyText: string | null;
+  children: (shown: Showtime[]) => React.ReactNode;
+}) {
+  const hidden = list.length - shown.length - pending;
+  if (!shown.length && !pending) return emptyText ? <p className="muted">{emptyText}</p> : null;
+  return (
+    <>
+      <div className="cards">
+        {children(shown)}
+        {pending > 0 && <Skeleton className="sk-card" />}
+      </div>
+      {hidden > 0 && shown.length < list.length && (
+        <p className="muted day-hidden">Hiding {plural(hidden, "showtime that doesn't fit", "showtimes that don't fit")}.</p>
+      )}
+    </>
   );
 }
 

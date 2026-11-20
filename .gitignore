@@ -3,3 +3,5 @@ node_modules/
 dist/
 .dev.vars
 .DS_Store
+# Scraped prototype and data used to design the app; not part of the product.
+reference/

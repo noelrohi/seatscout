@@ -1,0 +1,26 @@
+{
+  "name": "seatscout",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json && vite build",
+    "typecheck": "tsc -p tsconfig.json && tsc -p functions",
+    "preview": "bun run build && wrangler pages dev",
+    "deploy": "bun run build && wrangler pages deploy --project-name seatscout"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261120.1",
+    "@types/react": "18",
+    "@types/react-dom": "18",
+    "@vitejs/plugin-react": "4",
+    "typescript": "5",
+    "vite": "5",
+    "wrangler": "^4.165.0"
+  }
+}

@@ -5,7 +5,8 @@ import { ShowtimeCard, ShowtimeDetail, zonePhrase } from "../components/Showtime
 import { Segmented, Sheet, Skeleton, Stepper } from "../components/ui";
 import { api } from "../lib/api";
 import { fmtDateLong, fmtDateShort, fmtRuntime, plural } from "../lib/format";
-import { Link, setParams, useLocation } from "../lib/router";
+import { Link, getRouteApi } from "@tanstack/react-router";
+import { useSetSearch } from "../lib/search";
 import { MAX_MALLS, loadMalls, saveMalls } from "../lib/prefs";
 import { analyzeCached, zoneFromParams, zoneToParams, type Zone } from "../lib/seats";
 import { ensureSeats, pace, filmDetails, loadDay, loadFilm, seats, showtimes, stKey, useStore } from "../lib/store";
@@ -15,9 +16,13 @@ import { Poster } from "./parts";
 const ROW_LETTERS = "ABCDEFGHIJKLMNOPQRS".split("");
 const MAX_SIZE = 10;
 
+const route = getRouteApi("/movie/$filmId");
+
 export function MoviePage({ filmId }: { filmId: string }) {
   useStore();
-  const { params } = useLocation();
+  const search = route.useSearch();
+  const params = useMemo(() => new URLSearchParams(search as Record<string, string>), [search]);
+  const setParams = useSetSearch();
   useEffect(() => loadFilm(filmId), [filmId]);
   const fd = filmDetails.get(filmId);
 
@@ -93,7 +98,7 @@ export function MoviePage({ filmId }: { filmId: string }) {
         <div className="empty">
           <p className="empty-title">Unable to load this movie</p>
           <p className="muted">{fd.error}. Check the link, or go back and pick a movie from the list.</p>
-          <Link className="btn btn-primary" href="/">See all movies</Link>
+          <Link className="btn btn-primary" to="/" search={{}}>See all movies</Link>
         </div>
       </main>
     );
@@ -105,7 +110,7 @@ export function MoviePage({ filmId }: { filmId: string }) {
     <main className="page page-movie">
       <div className="movie-layout">
       <div className="movie-main">
-      <Link className="back" href="/">All movies</Link>
+      <Link className="back" to="/" search={{}}>All movies</Link>
       <div className="film-top">
       <Poster film={film} className="poster-sm film-top-poster" />
       <h1 className="film-title">{film.title}</h1>
@@ -264,6 +269,7 @@ function DayPanel({
   fitOnly: boolean;
   onFitOnly: (on: boolean) => void;
 }) {
+  const setParams = useSetSearch();
   const fits = (st: Showtime) => {
     const s = seats.get(st.id);
     return s?.state === "ready" && (analyzeCached(s.data, zone, size).best?.len ?? 0) >= size;
@@ -435,6 +441,7 @@ function ShowSheet({
   zone: Zone;
   size: number;
 }) {
+  const setParams = useSetSearch();
   const [fetched, setFetched] = useState<Showtime | null>(null);
   let st: Showtime | null = null;
   if (id) {

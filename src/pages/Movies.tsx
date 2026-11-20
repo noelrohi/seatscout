@@ -1,17 +1,24 @@
 import { useEffect } from "react";
 import { Segmented, Skeleton } from "../components/ui";
 import { fmtDateShort, fmtRuntime, plural } from "../lib/format";
-import { Link, setParams, useLocation } from "../lib/router";
+import { Link, getRouteApi } from "@tanstack/react-router";
+import { useSetSearch } from "../lib/search";
 import { films, loadFilms, useStore } from "../lib/store";
 import type { Film } from "../lib/types";
 import { Poster } from "./parts";
 
+const route = getRouteApi("/");
+
 export function MoviesPage() {
   useStore();
   useEffect(loadFilms, []);
-  const { params } = useLocation();
-  const tab = params.get("tab") === "soon" ? "soon" : "now";
-  const q = params.get("q") ?? "";
+  const search = route.useSearch();
+  const setParams = useSetSearch();
+  const tab = search.tab === "soon" ? "soon" : "now";
+  const q = search.q ?? "";
+  useEffect(() => {
+    document.title = "SeatScout: find seats together";
+  }, []);
   const status = films.status;
 
   const all = status?.state === "ready" ? status.data.films : [];
@@ -99,7 +106,7 @@ export function MoviesPage() {
 function MovieCard({ film }: { film: Film }) {
   const runtime = fmtRuntime(film.runtime);
   return (
-    <Link className="movie-card" href={`/movie/${film.id}`}>
+    <Link className="movie-card" to="/movie/$filmId" params={{ filmId: film.id }}>
       <Poster film={film} />
       <span className="movie-title">{film.title}</span>
       <span className="movie-meta">
